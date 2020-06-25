@@ -1,4 +1,5 @@
 import numpy as np
+from datasets import load_data
 
 def preprocess(text :str):
     text = text.lower()
@@ -42,7 +43,7 @@ def cos_similarity(x,y):
     return np.dot(nx, ny)
 
 def most_similar(query, word_to_id, id_to_word, word_matrix, top=5):
-    if query not in word2id:
+    if query not in word_to_id:
         print('%s is not found' % query)
         return
     
@@ -81,13 +82,23 @@ def ppmi(C, verbose=False, eps=1e-8):
                     print('%.1f%% done' % (100*cnt/total))
     return M
 
+def ptb_main():
+    window_size = 2
+    wordvec_size=100
+
+    corpus, word2id, id2word = load_data('train')
+    vocab_size = len(word2id)
+    C = create_co_matrix(corpus, vocab_size, window_size)
+    W = ppmi(C, verbose=True)
+
+    from sklearn.utils.extmath import randomized_svd
+    U, S ,V = randomized_svd(W, n_components=wordvec_size, n_iter=5, random_state=None)
+
+    word_vecs = U[:, :wordvec_size]
+
+    querys = ['you', 'year', 'car', 'toyota']
+    for query in querys:
+        most_similar(query, word2id, id2word, word_vecs, top=5)
+
 if __name__=='__main__':
-    text = 'you say goodbye and i say hello.'
-    corpus, word2id, id2word = preprocess(text)
-    C = create_co_matrix(corpus, len(word2id))
-    c1 = C[word2id['you']]
-    c2 = C[word2id['i']]
-    most_similar('you', word2id, id2word, C)
-    W = ppmi(C)
-    U, S, W = np.linalg.svd(W)
-    print(U[0])
+    ptb_main()
