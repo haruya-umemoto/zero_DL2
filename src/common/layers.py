@@ -1,5 +1,5 @@
 import numpy as np
-from common.functions import softmax, cross_entropy_error
+from common.functions import softmax, cross_entropy_error, SigmoidWithLoss
 
 class Affine:
     def __init__(self, W, b):
@@ -49,6 +49,21 @@ class Sigmoid:
         return out
     def backward(self, dout):
         dx = dout * (1 - self.out)*self.out
+        return dx
+
+class SigmoidWithLoss:
+    def __init__(self):
+        self.params, self.grads = [], []
+        self.out = None
+        self.y = None # output of softmax
+        self.t = None # true label
+    def forward(self, x, t):
+        self.t = t
+        self.y = 1 / (1 + np.exp(-x))
+        loss = cross_entropy_error(np.c_([1-self.y, self.y], self.t))
+        return loss
+    def backward(self, dout):
+        dx = (self.y - self.t)*dout/self.t.shape[0]
         return dx
 
 class Embedding:
