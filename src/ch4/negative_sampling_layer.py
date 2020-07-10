@@ -2,6 +2,7 @@ import sys
 sys.path.append('/Users/umeco/projects/zero_DL2/src/')
 import collections
 import numpy as np
+from common.layers import SigmoidWithLoss, EmbeddingDot
 
 class UnigramSampler:
     def __init__(self, corpus, power, sample_size):
@@ -37,11 +38,11 @@ class UnigramSampler:
         return negative_sample
 
 class NegativeSamplingLoss:
-    def __init__(self, W, corpus, power=0.75, sampling_size=5):
+    def __init__(self, W, corpus, power=0.75, sample_size=5):
         self.sample_size = sample_size
         self.sampler = UnigramSampler(corpus, power, sample_size)
-        self.loss_layers = [SigmoidWithLoss() for _ in range(sampling_size+1)]
-        self.embed_dot_layers = [EmbeddingDot(W) for _ in range(sampling_size+1)]
+        self.loss_layers = [SigmoidWithLoss() for _ in range(sample_size+1)]
+        self.embed_dot_layers = [EmbeddingDot(W) for _ in range(sample_size+1)]
 
         self.params, self.grads = [], []
         for layer in self.embed_dot_layers:
